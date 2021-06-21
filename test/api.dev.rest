@@ -2,7 +2,18 @@
 curl http://localhost:3000
 ###
 
-# Get an Item
+# Get an Item by id or slug
 curl http://localhost:3000/api/nug/item/:50 
 ###
 curl http://localhost:3000/api/nug/item/:colt%20python
+###
+
+# Create an Item
+POST http://localhost:3000/api/nugs/ HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Glock 19",
+    "caliber": "9mm",
+    "msrp": 699.99
+}

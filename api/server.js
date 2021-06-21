@@ -1,13 +1,23 @@
 "use strict"
-// const dotenv = require('dotenv')
-// dotenv.config();
-// console.log(`dotenv`, dotenv)
+const dotenv = require('dotenv')
+dotenv.config();
 const dev = process.env.NODE_ENVIRONMENT === 'development'
+const uri = process.env.URI
+const user = 'neo4j'
+const password = process.env.password
+
+// console.log({
+//     dev, uri, user, password
+// })
 
 // Require the framework and instantiate it
 const fastify = require('fastify')({ logger: true })
+const neo4j = require('neo4j-driver')
 
-const firearms = [
+const driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
+const session = driver.session()
+
+let firearms = [
     {
         name: "Colt Python 2020 .357",
         cost: 1700,
@@ -25,7 +35,7 @@ const firearms = [
 
 fastify.route({
     method: "GET",
-    url: '/api/farm/item/:slug',
+    url: '/api/nugs/item/:slug',
     handler: async (req, _) => {
         let { slug } = req.params
         slug = slug.replace(':', "").trim()
@@ -39,6 +49,35 @@ fastify.route({
         }
     }
 })
+
+fastify.route({
+    method: "POST",
+    url: "/api/nugs/",
+    handler: async (request, _) => {
+        console.log('posting new nug...')
+        // console.log(`request`, request)
+        // console.log(`request.body`, request.body)
+        try {
+            const result = await session.run(
+                'CREATE (a:Nug {name: $name, caliber: $caliber, msrp: $msrp}) RETURN a',
+                {
+                    ...request.body
+                }
+            )
+
+            const single = result.records[0];
+            const node = single.get(0)
+
+            console.log(`node`, node.properties.name)
+        }
+        finally {
+            // await session.close() //TODO: closing this causes an error for a new query.
+        }
+    }
+})
+
+
+
 
 // Hello World example route:
 fastify.route({
@@ -64,6 +103,14 @@ fastify.route({
         // E.g. check authentication
     },
     handler: async (request, reply) => {
+        let query = `MATCH (n) return n LIMIT 25`
+        let result = await session.run(query)
+        const single = result.records[0];
+        const node = single.get(0)
+
+        console.log(`result.records`, result.records)
+        console.log(`single`, single)
+        console.log(`node`, node.properties.name)
         return firearms
     }
 })
@@ -73,6 +120,7 @@ const start = async () => {
     try {
         await fastify.listen(3000)
     } catch (err) {
+        await driver.close(); // close neo4j connection on failure.
         fastify.log.error(err)
         process.exit(1)
     }
