@@ -1,0 +1,22 @@
+{
+    "name": "nugs-api",
+    "version": "1.0.0",
+    "description": "",
+    "main": "api/server.js",
+    "scripts": {
+      "dev": "nodemon api/server.js",
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "vercel dev",
+      "deploy": "vercel deploy --prod"
+    },
+    "devDependencies": {
+      "vercel": "^19.1.1"
+    },
+    "author": "Michael Preston",
+    "license": "ISC",
+    "dependencies": {
+      "dotenv": "^10.0.0",
+      "fastify": "^3.17.0",
+      "nodemon": "^2.0.7"
+    }
+  }

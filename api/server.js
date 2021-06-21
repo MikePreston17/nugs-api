@@ -2,7 +2,7 @@
 // const dotenv = require('dotenv')
 // dotenv.config();
 // console.log(`dotenv`, dotenv)
-const dev = process.env.NODE_ENVIRONMENT === 'development'
+// const dev = process.env.NODE_ENVIRONMENT === 'development'
 
 // Require the framework and instantiate it
 const fastify = require('fastify')({ logger: true })
