@@ -1,0 +1,10 @@
+## THIS IS A PROD COPY ##
+
+# Root
+curl http://localhost:3000
+###
+
+# Get an Item
+curl http://localhost:3000/api/nugs/item/:50 
+###
+curl http://localhost:3000/api/nugs/item/:almond%20butter
