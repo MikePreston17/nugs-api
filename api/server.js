@@ -76,9 +76,6 @@ fastify.route({
     }
 })
 
-
-
-
 // Hello World example route:
 fastify.route({
     method: 'GET',
