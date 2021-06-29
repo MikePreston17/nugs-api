@@ -17,22 +17,6 @@ const neo4j = require('neo4j-driver')
 const driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
 const session = driver.session()
 
-let firearms = [
-    {
-        name: "Colt Python 2020 .357",
-        cost: 1700,
-    }, {
-        name: "Saint Victor",
-        cost: 1900,
-    }, {
-        name: "Bubba-Face Blaster",
-        cost: 600,
-    }, {
-        name: "BCM 300 blackout Upper",
-        cost: 1050,
-    },
-]
-
 fastify.route({
     method: "GET",
     url: '/api/nugs/item/:slug',
@@ -47,6 +31,23 @@ fastify.route({
         return {
             itemsFound: results
         }
+    }
+})
+
+fastify.route({
+    method: "DELETE",
+    url: '/api/nugs/:slug',
+    handler: async (request, reply) => {
+
+        let { slug } = request.params
+        slug = slug.replace(':', "").trim()
+        console.log(`slug`, slug)
+
+        const result = await session.run(
+            `match(n:Nug {name: $name, caliber: $caliber, msrp: $msrp})
+        detach delete n`, { name: slug })
+
+        console.log(`result`, result)
     }
 })
 

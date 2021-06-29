@@ -17,3 +17,7 @@ content-type: application/json
     "caliber": "9mm",
     "msrp": 699.99
 }
+###
+
+DELETE  http://localhost:3000/api/nugs/:11 HTTP/1.1
+###
