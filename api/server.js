@@ -1,125 +1,68 @@
-"use strict"
-const dotenv = require('dotenv')
-dotenv.config();
-const dev = process.env.NODE_ENVIRONMENT === 'development'
-const uri = process.env.URI
-const user = 'neo4j'
-const password = process.env.password
-
-// console.log({
-//     dev, uri, user, password
-// })
+"use strict";
+// const dotenv = require('dotenv')
+// dotenv.config();
+// console.log(`dotenv`, dotenv)
+const devmode = process.env.NODE_ENVIRONMENT === "development";
 
 // Require the framework and instantiate it
-const fastify = require('fastify')({ logger: true })
-const neo4j = require('neo4j-driver')
-
-const driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
-const session = driver.session()
-
+const fastify = require("fastify")({ logger: true });
 fastify.route({
-    method: "GET",
-    url: '/api/nugs/item/:slug',
-    handler: async (req, _) => {
-        let { slug } = req.params
-        slug = slug.replace(':', "").trim()
-        let data = []; // Call neo4j here.
-        console.log(`data`, data)
-        let results = data[0]?.items?.find(i => i?.id.toString() === slug
-            || i?.name?.includes(slug))
-        console.log(`result`, { results, slug })
-        return {
-            itemsFound: results
-        }
-    }
-})
-
-fastify.route({
-    method: "DELETE",
-    url: '/api/nugs/:slug',
-    handler: async (request, reply) => {
-
-        let { slug } = request.params
-        slug = slug.replace(':', "").trim()
-        console.log(`slug`, slug)
-
-        const result = await session.run(
-            `match(n:Nug {name: $name, caliber: $caliber, msrp: $msrp})
-        detach delete n`, { name: slug })
-
-        console.log(`result`, result)
-    }
-})
-
-fastify.route({
-    method: "POST",
-    url: "/api/nugs/",
-    handler: async (request, _) => {
-        console.log('posting new nug...')
-        // console.log(`request`, request)
-        // console.log(`request.body`, request.body)
-        try {
-            const result = await session.run(
-                'CREATE (a:Nug {name: $name, caliber: $caliber, msrp: $msrp}) RETURN a',
-                {
-                    ...request.body
-                }
-            )
-
-            const single = result.records[0];
-            const node = single.get(0)
-
-            console.log(`node`, node.properties.name)
-        }
-        finally {
-            // await session.close() //TODO: closing this causes an error for a new query.
-        }
-    }
-})
+  method: "GET",
+  url: "/api/farm/item/:slug",
+  handler: async (req, _) => {
+    let { slug } = req.params;
+    slug = slug.replace(":", "").trim();
+    let data = []; // Call neo4j here.
+    let results = data[0]?.items?.find(
+      (i) => i?.id.toString() === slug || i?.name?.includes(slug)
+    );
+    console.log(`result`, { results, slug });
+    return {
+      itemsFound: results,
+    };
+  },
+});
 
 // Hello World example route:
 fastify.route({
-    method: 'GET',
-    url: '/',
-    // schema: {
-    //     // request needs to have a querystring with a `name` parameter
-    //     querystring: {
-    //         name: { type: 'string' }
-    //     },
-    //     // the response needs to be an object with an `hello` property of type 'string'
-    //     response: {
-    //         200: {
-    //             type: 'object',
-    //             // properties: {
-    //             //     hello: { type: 'string' }
-    //             // }
-    //         }
-    //     }
-    // },
-    // this function is executed for every request before the handler is executed
-    // preHandler: async (request, reply) => {
-    //     // E.g. check authentication
-    // },
-    handler: async (request, reply) => {
-        let query = `MATCH (n) return n LIMIT 25`
-        let result = await session.run(query)
-        const single = result.records[0];
-        const node = single.get(0)
+  method: "GET",
+  url: "/",
+  schema: {
+    // request needs to have a querystring with a `name` parameter
+    querystring: {
+      name: { type: "string" },
+    },
+    // the response needs to be an object with an `hello` property of type 'string'
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          hello: { type: "string" },
+        },
+      },
+    },
+  },
+  // this function is executed for every request before the handler is executed
+  preHandler: async (request, reply) => {
+    // E.g. check authentication
+  },
+  handler: async (request, reply) => {
+    return { hello: "world" };
+  },
+});
 
-        let nugs = result.records.map(n => n.get(0).properties)
-        dev && console.log(`nugs`, nugs)
-        return nugs
-    }
-})
-
+const PORT = process.env?.PORT || 3000;
 // Run the server!
 const start = async () => {
-    try {
-        await fastify.listen(3000)
-    } catch (err) {
-        await driver.close(); // close neo4j connection on failure.
-        fastify.log.error(err)
-        process.exit(1)
-    }
-}
-start()
+  await fastify
+    .listen(PORT)
+    .then((result) => {
+      console.log("server running... \n result: >> ", result);
+    })
+    .catch((err) => {
+      fastify.log.error(err);
+      process.exit(1);
+    });
+};
+
+start();
